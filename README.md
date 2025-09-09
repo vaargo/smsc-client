@@ -35,10 +35,11 @@ $default = [
 ***
 
 Примеры использования:
+
 ```php
 <?php
 // Инициализация
-$smsc = new \SMSCenter\SMSCenter('login', 'password', false, [
+$smsc = new \SMSCenter('login', 'password', false, [
     'charset' => SMSCenter::CHARSET_UTF8,
     'fmt' => SMSCenter::FMT_XML
 ]);
@@ -81,5 +82,3 @@ if ($sms->getChargingZone('+79991111111') === self::ZONE_RU) {
 ```
 
 ***
-
-Лицензия: Apache License, Version 2.0

@@ -1,28 +1,35 @@
 {
-    "name": "jhaoda/smscenter",
-    "type": "library",
-    "description": "Класс для работы с API сервиса smsc.ru",
-    "keywords": ["smsc", "smscenter", "smsc.ru"],
-    "homepage": "https://github.com/jhaoda/SMSCenter",
-    "license": "Apache-2.0",
-    "authors": [
-        {
-            "name": "JhaoDa",
-            "email": "jhaoda@gmail.com"
-        }
-    ],
-    "support": {
-        "source": "https://github.com/jhaoda/SMSCenter",
-        "issues": "https://github.com/jhaoda/SMSCenter/issues"
-    },
-    "require": {
-        "php": ">=5.4.0"
-    },
-    "autoload": {
-        "psr-0": {
-            "SMSCenter\\": "lib/"
-        }
-    },
-    "minimum-stability": "stable",
-    "notify-batch": "http://jhaoda.ru/install-notify"
+  "name": "vaargo/smsc-client",
+  "type": "library",
+  "description": "Класс для работы с API сервиса smsc.ru",
+  "keywords": [
+    "smsc",
+    "smscenter",
+    "smsc.ru",
+    "client",
+    "api"
+  ],
+  "homepage": "https://github.com/vaargo/smsc-client",
+  "authors": [
+    {
+      "name": "JhaoDa",
+      "email": "jhaoda@gmail.com"
+    }
+  ],
+  "support": {
+    "source": "https://github.com/vaargo/smsc-client",
+    "issues": "https://github.com/vaargo/smsc-client/issues"
+  },
+  "require": {
+    "php": ">=5.4.0",
+    "ext-curl": "*",
+    "ext-mbstring": "*",
+    "ext-json": "*"
+  },
+  "autoload": {
+    "psr-4": {
+      "SMSCenter\\": "client/"
+    }
+  },
+  "minimum-stability": "stable"
 }
