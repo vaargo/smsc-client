@@ -2,6 +2,7 @@
   "name": "vaargo/smsc-client",
   "type": "library",
   "description": "Класс для работы с API сервиса smsc.ru",
+  "license": "MIT",
   "keywords": [
     "smsc",
     "smscenter",
