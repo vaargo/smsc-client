@@ -1,18 +1,11 @@
 <?php
 
 namespace SMSCenter;
-/**
- * Библиотека для работы с сервисом smsc.ru (SMS-Центр)
- *
- * @version 2.0.0
- * @author  JhaoDa <jhaoda@gmail.com>
- * @author  Vargo <to@7ever.ru>
- * @original https://github.com/jhaoda/SMSCenter
- * @link    https://github.com/vaargo/smsc-client
- */
+
+
 class Client
 {
-    const VERSION = '2.0.1';
+    const VERSION = '0.9.1';
 
     const MSG_SMS   = 0;
     const MSG_FLASH = 1;
@@ -53,7 +46,10 @@ class Client
 
     private $login;
     private $password;
-    private $useSSL;
+
+    private $apiKey;
+
+    private $useSSL  = true;
     private $options = [];
     private $types   = ['', 'flash=1', 'push=1', 'hlr=1', 'bin=1', 'bin=2', 'ping=1'];
 
@@ -70,16 +66,12 @@ class Client
     /**
      * Инициализация.
      *
-     * @param string $login логин
-     * @param string $password пароль
-     * @param bool   $useSSL использовать HTTPS или нет
-     * @param array  $options прочие параметры
+     * @param       $apiKey
+     * @param array $options прочие параметры
      */
-    public function __construct($login, $password, $useSSL = false, array $options = [])
+    public function __construct($apiKey, array $options = [])
     {
-        $this->login    = $login;
-        $this->password = $password;
-        $this->useSSL   = $useSSL;
+        $this->apiKey = $apiKey;
 
         $default = [
             'charset' => self::CHARSET_UTF8,
@@ -90,16 +82,24 @@ class Client
     }
 
     /**
+     * @param $useSSL
+     * @return static
+     */
+    public function useSSL($useSSL = true)
+    {
+        $this->useSSL = $useSSL;
+
+        return $this;
+    }
+
+    /**
      * Отправка сообщения.
-     *
      * @param string|array $phones номера телефонов
      * @param string       $message текст сообщения
      * @param string       $sender имя отправителя
      * @param array        $options дополнительные параметры
-     *
-     * @return bool|string|\stdClass  результат выполнения запроса в виде строки, объекта (FMT_JSON) или false в случае ошибки.
-     * @throws \InvalidArgumentException если список телефонов пуст или длина сообщения больше 1000 символов
-     *
+     * @return Response
+     * @throws \InvalidArgumentException|RequestException если список телефонов пуст или длина сообщения больше 1000 символов
      */
     public function send($phones, $message, $sender = null, array $options = [])
     {
@@ -134,12 +134,11 @@ class Client
 
     /**
      * Отправка разных сообщений на несколько номеров.
-     *
      * @param array  $list массив [номер => сообщение] или [номер, сообщение]
      * @param string $sender имя отправителя
      * @param array  $options дополнительные параметры
-     *
-     * @return bool|string|\stdClass результат выполнения запроса в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @return Response
+     * @throws RequestException
      */
     public function sendMulti(array $list, $sender = null, array $options = [])
     {
@@ -162,10 +161,9 @@ class Client
 
     /**
      * Проверка номеров на доступность в реальном времени.
-     *
      * @param string|array $phones номера телефонов
-     *
-     * @return bool|string|\stdClass  результат выполнения запроса в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @return Response
+     * @throws RequestException
      */
     public function pingPhone($phones)
     {
@@ -174,12 +172,11 @@ class Client
 
     /**
      * Получение стоимости рассылки.
-     *
      * @param string|array $phones номера телефонов
      * @param string       $message текст сообщения
      * @param array        $options дополнительные опции
-     *
-     * @return bool|string|\stdClass  стоимость рассылки в виде строки, объекта (FMT_JSON) или FALSE в случае ошибки.
+     * @return Response
+     * @throws RequestException
      */
     public function getCost($phones, $message, array $options = [])
     {
@@ -190,11 +187,10 @@ class Client
 
     /**
      * Получение стоимости рассылки разные сообщения на несколько номеров.
-     *
      * @param array $list массив [номер => сообщение] или [номер, сообщение]
      * @param array $options дополнительные опции
-     *
-     * @return bool|string|\stdClass  стоимость рассылки в виде строки, объекта (FMT_JSON) или FALSE в случае ошибки.
+     * @return Response
+     * @throws RequestException
      */
     public function getCostMulti(array $list, array $options = [])
     {
@@ -205,64 +201,55 @@ class Client
 
     /**
      * Получение статуса сообщения.
-     *
      * @param string     $phone номер телефона
      * @param int|string $id идентификатор сообщения
      * @param int        $mode вид ответа: обычный, полный, расширеный
-     *
-     * @return bool|string|\stdClass  статус сообщения в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @return array  статус сообщения в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @throws RequestException
      */
     public function getStatus($phone, $id, $mode = self::STATUS_PLAIN)
     {
-        return $this->sendRequest('status', [
+        $response = $this->sendRequest('status', [
             'phone' => $phone,
             'id'    => (int)$id,
             'all'   => (int)$mode,
         ]);
+
+        return $response->getData();
     }
 
     /**
      * Получение информации об операторе: название и регион регистрации номера абонента.
-     *
      * @param string $phone номер телефона
-     *
-     * @return bool|string|\stdClass  информация об операторе в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @return array  информация об операторе в виде строки, объекта (FMT_JSON) или false в случае ошибки.
+     * @throws RequestException
      */
     public function getOperatorInfo($phone)
     {
-        return $this->sendRequest('info', [
+        $response = $this->sendRequest('info', [
             'get_operator' => '1',
             'phone'        => $phone,
         ]);
+
+        return $response->getData();
     }
 
     /**
      * Запрос баланса.
-     *
      * @param int $format формат ответа сервера (self::FMT_JSON)
-     *
-     * @return string  баланс в виде строки или false в случае ошибки.
+     * @return false|float  баланс в виде строки или false в случае ошибки.
+     * @throws RequestException
      */
     public function getBalance($format = self::FMT_JSON)
     {
         $response = $this->sendRequest('balance', ['fmt' => $format]);
 
-        if ($format === self::FMT_JSON) {
-            return json_decode($response)->balance;
-        }
-
-        if ($format === self::FMT_XML) {
-            return preg_replace('~</*balance>~', '', $response);
-        }
-
-        return $response;
+        return $response->ok() ? $response->getBalance() : false;
     }
 
     /**
      * Определение тарифной зоны.
-     *
      * @param string $phone номер телефона
-     *
      * @return int  номер тарифной зоны (константы self::ZONE_*)
      */
     public function getChargingZone($phone)
@@ -280,12 +267,11 @@ class Client
 
     /**
      * Самая умная функция.
-     *
      * @param string $resource
      * @param array  $options
-     *
-     * @return array|false|string
+     * @return Response
      * @throws \InvalidArgumentException
+     * @throws RequestException
      *
      */
     private function sendRequest($resource, array $options)
@@ -301,8 +287,7 @@ class Client
         }
 
         $params = [
-            'login=' . urlencode($this->login),
-            'psw=' . urlencode($this->password),
+            'apikey=' . urlencode($this->apiKey),
         ];
 
         foreach ($options as $key => $value) {
@@ -334,15 +319,14 @@ class Client
             }
         }
 
-        return !empty($ret) ? $ret : false;
+
+        return new Response($ret, $options['fmt']);
     }
 
     /**
      * Непосредственно выполнение запроса.
-     *
      * @param string $resource
      * @param array  $params
-     *
      * @return string  ответ сервера
      */
     private function execRequest($resource, array $params)
@@ -394,9 +378,7 @@ class Client
 
     /**
      * Удаляет из номера любые символы, кроме цифр.
-     *
      * @param string $phone номер телефона
-     *
      * @return string  «чистый» номер телефона
      */
     public static function clearPhone($phone)
