@@ -13,6 +13,10 @@
   "homepage": "https://github.com/vaargo/smsc-client",
   "authors": [
     {
+      "name": "Vaargo",
+      "email": "to@7ever.ru"
+    },
+    {
       "name": "JhaoDa",
       "email": "jhaoda@gmail.com"
     }
